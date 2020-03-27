@@ -1,0 +1,61 @@
+###############################################################################
+# Licensed Materials - Property of IBM.
+# Copyright IBM Corporation 2019. All Rights Reserved.
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure
+# restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+# Contributors:
+# IBM Corporation - initial API and implementation
+###############################################################################
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: db2database
+  labels:
+    app.kubernetes.io/name: db2database
+allowHostDirVolumePlugin: true
+allowHostIPC: true
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: true
+allowPrivilegedContainer: true
+allowedCapabilities:
+  - "SYS_RESOURCE"
+  - "IPC_OWNER"
+  - "SYS_NICE"
+  - "NET_RAW" # need for ping, use in etcd
+  - "CHOWN"
+  - "DAC_OVERRIDE"
+  - "FSETID"
+  - "FOWNER"
+  - "SETGID"
+  - "SETUID"
+  - "SETFCAP"
+  - "SETPCAP"
+  - "NET_BIND_SERVICE"
+  - "SYS_CHROOT"
+  - "KILL"
+  - "AUDIT_WRITE"
+allowedFlexVolumes: []
+defaultAddCapabilities: []
+fsGroup:
+  rule: RunAsAny
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+- ALL
+runAsUser:
+  type: RunAsAny
+seccompProfiles:
+- docker/default
+seLinuxContext:
+  type: RunAsAny
+supplementalGroups:
+  type: RunAsAny
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- persistentVolumeClaim
+- projected
+- secret
+priority: 0

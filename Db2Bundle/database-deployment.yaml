@@ -1,0 +1,96 @@
+###############################################################################
+# Licensed Materials - Property of IBM.
+# Copyright IBM Corporation 2018. All Rights Reserved.
+# U.S. Government Users Restricted Rights - Use, duplication or disclosure
+# restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+# Contributors:
+# IBM Corporation - initial API and implementation
+###############################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db2database
+  labels:
+    app.kubernetes.io/name: db2database
+    component: db2database
+    run: db2database
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: db2database
+      component: db2database
+      run: db2database
+  template:
+    metadata:  
+      labels:
+        app.kubernetes.io/name: db2database
+        component: db2database
+        run: db2database
+    spec:
+      volumes:
+        - name: db2-driverpvc
+          persistentVolumeClaim:
+            claimName: db2pvc
+      serviceAccountName: db2database
+      imagePullSecrets:
+        - name: db2-docker-registry-secret
+      hostNetwork: false
+      hostPID: false
+      hostIPC: true
+      hostPorts: true
+      securityContext:
+        runAsNonRoot: false
+      containers:
+        - name: db2database
+          image: "hyc-mobilefoundation-dev-docker-local.artifactory.swg-devops.com/ibmcom-db2:db2custom"
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: true
+            runAsNonRoot: false
+          env:
+            - name: LICENSE
+              value: accept
+            - name: DB2INSTANCE
+              valueFrom:
+                secretKeyRef:
+                  name: db2-secret
+                  key: DB2INSTANCE
+            - name: DB2INST1_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db2-secret
+                  key: DB2INST1_PASSWORD
+          livenessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - su - $DB2INSTANCE  -c '/database/config/${DB2INSTANCE}/sqllib/bin/db2gcf -s'
+            initialDelaySeconds: 810
+            periodSeconds: 90
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - su - $DB2INSTANCE  -c '/database/config/${DB2INSTANCE}/sqllib/bin/db2gcf -s'
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 50
+          ports:
+            - containerPort: 50000
+          volumeMounts:
+            - name: db2-driverpvc
+              readOnly: false
+              mountPath: /database
+          resources:
+            requests:
+              cpu: 3200m
+              memory: 3200Mi
+          limits:
+              cpu: 4200m
+              memory: 3200Mi
