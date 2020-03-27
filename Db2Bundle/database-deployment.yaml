@@ -31,7 +31,7 @@ spec:
       volumes:
         - name: db2-driverpvc
           persistentVolumeClaim:
-            claimName: db2pvc
+            claimName: _PVC_NAME_
       serviceAccountName: db2database
       imagePullSecrets:
         - name: db2-docker-registry-secret
@@ -43,7 +43,7 @@ spec:
         runAsNonRoot: false
       containers:
         - name: db2database
-          image: "hyc-mobilefoundation-dev-docker-local.artifactory.swg-devops.com/ibmcom-db2:db2custom"
+          image: "_REGISTRY_URL_/ibmcom-db2:_DB_IMG_TAG_"
           imagePullPolicy: Always
           securityContext:
             privileged: true
